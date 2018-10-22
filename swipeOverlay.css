@@ -1,0 +1,23 @@
+#swipeOverlay {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 200px;
+  height: 20px;
+  z-index: 3000;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 2px solid black;
+  margin: 0;
+  touch-action: none;
+}
+#swipeOverlay::backdrop {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3000;
+  background-color: rgba(0, 0, 0, 0);
+  touch-action: none;
+}

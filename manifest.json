@@ -1,0 +1,31 @@
+{
+  "name": "KSwipe",
+  "version": "0.1",
+  "description": "Book reader swipe extension that makes it easy for my friend Krissa to read with limited dexterity. Only allows a single page every few seconds, requires larger motions, and allows them to be slow.",
+  "options_page": "options.html",
+  "permissions": [
+    "activeTab",
+    "declarativeContent",
+    "storage"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "page_action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://read.amazon.com/*"],
+      "css": ["swipeOverlay.css"],
+      "js": ["swipeOverlay.js"]
+    },
+    {
+      "matches": ["*://read.amazon.com/*/KindleReaderApp.html"],
+      "js": ["readerFrame.js"],
+      "all_frames": true
+    }
+  ],
+  "manifest_version": 2
+}
