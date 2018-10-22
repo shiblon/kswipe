@@ -13,3 +13,5 @@ This makes it possible to swipe with low accuracy and without removing the finge
 To use, install this Chrome extension in your browser, and tap the icon when on `read.amazon.com`. An overlay will appear indicating that it is enabaled, which prevents all actions except unidirectional single-page swipes.
 
 If you need to interact with the page, disable it in the same way.
+
+TODO: Options are currently bogus.
