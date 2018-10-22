@@ -91,10 +91,15 @@ function registerSwipeHandler(el, handler) {
   });
 }
 
-const dialog = document.createElement('dialog');
-dialog.id = 'swipeOverlay';
-dialog.appendChild(document.createTextNode('hi there!'));
-document.body.appendChild(dialog);
+function makeDialog() {
+  const dialog = document.createElement('dialog');
+  dialog.id = 'swipeOverlay';
+  dialog.appendChild(document.createTextNode('KSwipe'));
+  document.body.appendChild(dialog);
+  return dialog;
+}
+
+const dialog = makeDialog();
 
 registerSwipeHandler(dialog, ({direction}) => {
   const reader = document.getElementById('KindleReaderIFrame');

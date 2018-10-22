@@ -1,9 +1,23 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <style>
+      #enable {
+        padding: 0.5em;
+        background-color: #f44;
+        color: #000;
+        white-space: nowrap;
+        font-size: 2em;
+        font-family: sans-serif;
+        font-weight: bold;
+      }
+      #enable.on {
+        background-color: #4f4;
+      }
+    </style>
   </head>
   <body>
-    <p>Enabled: <input type="checkbox" id="enable">
+    <div id="enable">KSwipe Off</div>
     <script src="popup.js"></script>
   </body>
 </html>
