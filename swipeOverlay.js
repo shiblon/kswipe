@@ -7,7 +7,6 @@ function registerSwipeHandler(el, handler, config) {
   const onRest = config.onRest || nop;
   const onIdle = config.onIdle || nop;
 
-
   // States:
   // - idle: nothing is happening, not debounced, not dragging.
   // - determining: touch started, don't know direction yet
@@ -310,7 +309,7 @@ function hideOverlay() {
   return;
 }
 
-chrome.storage.sync.get('enable', data => {
+chrome.storage.local.get('enable', data => {
   setEnabled(data.enable);
 });
 
@@ -322,7 +321,7 @@ function setEnabled(on) {
   if (on === isEnabled()) {
     return;
   }
-  chrome.storage.sync.set({enable: on});
+  chrome.storage.local.set({enable: on});
   if (on) {
     goFull();
     showOverlay();
@@ -338,7 +337,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     return;
   }
   switch (request.type) {
-    case "enabled":
+    case "enable":
       setEnabled(request.value);
       return;
     default:
@@ -347,6 +346,6 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
 });
 
-chrome.storage.sync.get('enable', data => {
+chrome.storage.local.get('enable', data => {
   setEnabled(data.enable);
 });
