@@ -32,9 +32,9 @@ function registerSwipeHandler(el, handler, config) {
   }
 
   el.addEventListener('touchmove', ev => {
-    const MIN_TRIGGER_PX = document.body.clientWidth / 4;
+    const MIN_TRIGGER_PX = document.body.clientWidth / 6;
     const MIN_DIR_PX = 50;
-    const REST_DURATION_MS = 2 * 1000;
+    const REST_DURATION_MS = 3 * 1000;
     const REST_CHECK_INTERVAL_MS = 50;
 
     const touch = ev.touches[0];
@@ -66,7 +66,7 @@ function registerSwipeHandler(el, handler, config) {
         if (Math.sign(dx) !== swipe.direction) {
           return; // Ignore slight backward movements.
         }
-        swipe.totalX += dx;
+        swipe.totalX = touch.clientX - swipe.startX;
 
         onDrag({
           target: el,

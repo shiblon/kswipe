@@ -3,11 +3,9 @@ elEnable.addEventListener('click', evt => {
   const on = !evt.target.classList.contains('on');
   setEnabled(on);
   chrome.storage.local.set({enable: on});
-  /*
   chrome.tabs.query({active: true, currentWindow: true}, tabs => {
-    chrome.tabs.sendMessage(tabs[0].id, {type: "enabled", value: on});
+    chrome.tabs.sendMessage(tabs[0].id, {type: "enable", value: on});
   });
-  */
   window.close(); // dismiss the popup
 });
 
