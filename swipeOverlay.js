@@ -57,6 +57,8 @@ function registerSwipeHandler(el, handler, config) {
         // to idle.
         if (Math.abs(swipe.totalX) >= MIN_DIR_PX) {
           swipe.direction = Math.sign(swipe.totalX);
+          swipe.totalX = 0;
+          swipe.startX = touch.clientX;
           swipe.state = dirMatchesOriginatingSide(swipe.direction, touch.clientX) ? 'dragging' : 'idle';
         }
         return;
