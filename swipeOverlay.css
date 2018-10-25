@@ -15,11 +15,7 @@
   font-weight: bold;
   text-align: left;
 }
-#swipeOverlay #exitBtn {
-  font-size: 2em;
-  display: block;
-}
-#swipeOverlay .navBtn {
+#swipeOverlay .navBtn,.ctlBtn {
   font-size: 2em;
   display: inline-block;
 }

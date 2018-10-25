@@ -124,10 +124,32 @@ function showOverlay() {
   overlay.id = 'swipeOverlay';
   const exitButton = document.createElement('button');
   exitButton.id = 'exitBtn';
-  exitButton.appendChild(document.createTextNode('Exit KSwipe'));
+  exitButton.classList.add('ctlBtn');
+  const exitImg = document.createElement('img');
+  exitImg.width = 64;
+  exitImg.height = 64;
+  exitImg.src = chrome.runtime.getURL('images/exit.png');
+  exitButton.appendChild(exitImg);
   exitButton.addEventListener('click', () => {
     setEnabled(false);
   });
+  const fsButton = document.createElement('button');
+  fsButton.id = 'fsButton';
+  fsButton.classList.add('ctlBtn');
+  const fsImg = document.createElement('img');
+  fsImg.id = 'fsImg';
+  fsImg.src = chrome.runtime.getURL('images/expand.png');
+  fsImg.width = 64;
+  fsImg.height = 64;
+  fsButton.appendChild(fsImg);
+  fsButton.addEventListener('click', toggleFull);
+  document.onwebkitfullscreenchange = () => {
+    if (document.webkitIsFullScreen) {
+      fsImg.src = chrome.runtime.getURL('images/contract.png');
+    } else {
+      fsImg.src = chrome.runtime.getURL('images/expand.png');
+    }
+  };
   const prevButton = document.createElement('button');
   prevButton.classList.add('navBtn');
   prevButton.appendChild(document.createTextNode('Prev'));
@@ -137,6 +159,8 @@ function showOverlay() {
   nextButton.appendChild(document.createTextNode('Next'));
   nextButton.addEventListener('click', goNext);
   overlay.appendChild(exitButton);
+  overlay.appendChild(fsButton);
+  overlay.appendChild(document.createElement('br'));
   overlay.appendChild(prevButton);
   overlay.appendChild(nextButton);
   registerSwipeHandler(overlay, ({direction}) => {
@@ -147,6 +171,29 @@ function showOverlay() {
     }
   });
   document.body.appendChild(overlay);
+}
+
+function toggleFull() {
+  if (!document.webkitFullscreenEnabled) {
+    return;
+  }
+  if (document.webkitIsFullScreen) {
+    exitFull();
+  } else {
+    goFull();
+  }
+}
+
+function goFull() {
+  if (document.webkitFullscreenEnabled) {
+    document.body.webkitRequestFullscreen();
+  }
+}
+
+function exitFull() {
+  if (document.webkitFullscreenEnabled) {
+    document.webkitExitFullscreen();
+  }
 }
 
 function hideOverlay() {
@@ -167,19 +214,15 @@ function isEnabled() {
 }
 
 function setEnabled(on) {
-  chrome.storage.sync.set({enable: on});
   if (on === isEnabled()) {
     return;
   }
+  chrome.storage.sync.set({enable: on});
   if (on) {
-    if (document.webkitFullscreenEnabled) {
-      document.body.webkitRequestFullscreen();
-    }
+    goFull();
     showOverlay();
   } else {
-    if (document.webkitFullscreenEnabled) {
-      document.webkitExitFullscreen();
-    }
+    exitFull();
     hideOverlay();
   }
 }
