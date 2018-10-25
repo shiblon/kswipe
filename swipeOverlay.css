@@ -15,7 +15,25 @@
   font-weight: bold;
   text-align: left;
 }
-#swipeOverlay .navBtn,.ctlBtn {
+button.navBtn,button.ctlBtn {
   font-size: 2em;
+  position: relative;
   display: inline-block;
+  width: 48px;
+  height: 48px;
+  padding: 3px;
+  border-width: 1px;
+}
+button.navBtn>img,button.ctlBtn>img {
+  width: 40px;
+  height: 40px;
+}
+#swipeIndicator {
+  display: block;
+  position: fixed;
+  right: 0;
+  top: 0;
+  border: none;
+  width: 96px;
+  height: 96px;
 }
