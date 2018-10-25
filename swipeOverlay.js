@@ -1,9 +1,6 @@
-function registerSwipeHandler(el, handler) {
-  const REST_DURATION_MS = 2 * 1000;
-  const REST_CHECK_INTERVAL_MS = 100;
-  const MIN_DIR_PX = 15;
-  const MIN_TRIGGER_PX = document.body.clientWidth / 3;
+"strict";
 
+function registerSwipeHandler(el, handler) {
   // States:
   // - idle: nothing is happening, not debounced, not dragging.
   // - determining: touch started, don't know direction yet
@@ -20,11 +17,20 @@ function registerSwipeHandler(el, handler) {
     restStartTime: 0,
   };
 
-  function dirDetermined(totX) {
-    return Math.abs(totX) >= MIN_DIR_PX;
+  function dirMatchesOriginatingSide(dir, x) {
+    const w = document.body.clientWidth;
+    // A positive direction needs to start on the left third
+    // of the screen. A negative direction needs to start on the
+    // right third of the screen.
+    return (x < w/3 && dir > 0) || (x > 2*w/3 && dir < 0);
   }
 
   el.addEventListener('touchmove', ev => {
+    const MIN_TRIGGER_PX = document.body.clientWidth / 4;
+    const MIN_DIR_PX = 50;
+    const REST_DURATION_MS = 2 * 1000;
+    const REST_CHECK_INTERVAL_MS = 50;
+
     const touch = ev.touches[0];
     let dx = 0;
     switch (swipe.state) {
@@ -38,9 +44,13 @@ function registerSwipeHandler(el, handler) {
       case 'determining':
         dx = touch.clientX - swipe.startX;
         swipe.totalX += dx;
+        // If we've moved a minimum number of pixels, check
+        // that the motion originated from the appropriate
+        // part of the screen. Otherwise ignore and go back
+        // to idle.
         if (Math.abs(swipe.totalX) >= MIN_DIR_PX) {
           swipe.direction = Math.sign(swipe.totalX);
-          swipe.state = 'dragging';
+          swipe.state = dirMatchesOriginatingSide(swipe.direction, touch.clientX) ? 'dragging' : 'idle';
         }
         return;
       case 'dragging':
@@ -81,7 +91,11 @@ function registerSwipeHandler(el, handler) {
         }
         return;
       case 'resting':
-        // If we get move events, then we start resting time over.
+        // If we get move events while resting, we start the resting
+        // time over. Resting can only end when we get no touch move
+        // events for a specified period of time.
+        // This gives the user time to haltingly move fingers and
+        // hands off of the screen.
         swipe.restStartTime = +new Date();
         return;
       default:
@@ -91,35 +105,82 @@ function registerSwipeHandler(el, handler) {
   });
 }
 
-function makeDialog() {
-  const dialog = document.createElement('dialog');
-  dialog.id = 'swipeOverlay';
-  dialog.appendChild(document.createTextNode('KSwipe'));
-  document.body.appendChild(dialog);
-  return dialog;
+function goNext() {
+  const reader = document.getElementById('KindleReaderIFrame');
+  reader.contentWindow.postMessage('next', '*');
 }
 
-const dialog = makeDialog();
-
-registerSwipeHandler(dialog, ({direction}) => {
+function goPrev() {
   const reader = document.getElementById('KindleReaderIFrame');
-  if (direction < 0) {
-    reader.contentWindow.postMessage('next', '*');
-  } else {
-    reader.contentWindow.postMessage('prev', '*');
+  reader.contentWindow.postMessage('prev', '*');
+}
+
+function showOverlay() {
+  if (document.querySelector('#swipeOverlay')) {
+    console.error('swipe overlay already on');
+    return;
   }
+  const overlay = document.createElement('div');
+  overlay.id = 'swipeOverlay';
+  const exitButton = document.createElement('button');
+  exitButton.id = 'exitBtn';
+  exitButton.appendChild(document.createTextNode('Exit KSwipe'));
+  exitButton.addEventListener('click', () => {
+    setEnabled(false);
+  });
+  const prevButton = document.createElement('button');
+  prevButton.classList.add('navBtn');
+  prevButton.appendChild(document.createTextNode('Prev'));
+  prevButton.addEventListener('click', goPrev);
+  const nextButton = document.createElement('button');
+  nextButton.classList.add('navBtn');
+  nextButton.appendChild(document.createTextNode('Next'));
+  nextButton.addEventListener('click', goNext);
+  overlay.appendChild(exitButton);
+  overlay.appendChild(prevButton);
+  overlay.appendChild(nextButton);
+  registerSwipeHandler(overlay, ({direction}) => {
+    if (direction < 0) {
+      goNext();
+    } else {
+      goPrev();
+    }
+  });
+  document.body.appendChild(overlay);
+}
+
+function hideOverlay() {
+  const overlay = document.querySelector('#swipeOverlay');
+  if (!overlay) {
+    return;
+  }
+  document.body.removeChild(overlay);
+  return;
+}
+
+chrome.storage.sync.get('enable', data => {
+  setEnabled(data.enable);
 });
 
+function isEnabled() {
+  return !!document.getElementById('swipeOverlay');
+}
+
 function setEnabled(on) {
-  if (on == !!dialog.open) {
+  chrome.storage.sync.set({enable: on});
+  if (on === isEnabled()) {
     return;
   }
   if (on) {
-    dialog.showModal();
-    dialog.style.display = 'block';
+    if (document.webkitFullscreenEnabled) {
+      document.body.webkitRequestFullscreen();
+    }
+    showOverlay();
   } else {
-    dialog.close();
-    dialog.style.display = 'none';
+    if (document.webkitFullscreenEnabled) {
+      document.webkitExitFullscreen();
+    }
+    hideOverlay();
   }
 }
 
