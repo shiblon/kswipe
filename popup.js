@@ -1,31 +1,32 @@
-const elEnable = document.getElementById('on');
+const elEnable = document.getElementById('enableBtn');
+// Sets whether the extension works at all.
 elEnable.addEventListener('click', evt => {
   const on = !evt.target.classList.contains('on');
-  setOn(on);
-  chrome.storage.sync.set({on: on});
-  chrome.tabs.query({active: true, currentWindow: true}, tabs => {
-    chrome.tabs.sendMessage(tabs[0].id, {type: 'on', value: on});
-  });
+  setEnabled(on);
   window.close(); // dismiss the popup
 });
 
-function setOn(on) {
-  const elEnable = document.getElementById('on');
+function setEnabled(on) {
+  const elEnable = document.getElementById('enableBtn');
+  chrome.storage.sync.set({enabled: on});
+  chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+    chrome.tabs.sendMessage(tabs[0].id, {type: 'enabled', value: on});
+  });
   if (on) {
     elEnable.classList.add('on');
-    elEnable.innerText = 'KSwipe On';
+    elEnable.innerText = 'KSwipe Enabled';
   } else {
     elEnable.classList.remove('on');
-    elEnable.innerText = 'KSwipe Off';
+    elEnable.innerText = 'KSwipe Disabled';
   }
 }
 
 chrome.storage.onChanged.addListener((keyvals, storageType) => {
-  if (keyvals.on) {
-    setOn(keyvals.on.newValue);
+  if (keyvals.enabled) {
+    setEnabled(keyvals.enabled.newValue);
   }
 });
 
-chrome.storage.sync.get('on', data => {
-  setOn(data.on);
+chrome.storage.sync.get('enabled', data => {
+  setEnabled(data.enabled);
 });

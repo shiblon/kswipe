@@ -344,6 +344,18 @@ function isEnabled() {
   return !!document.getElementById('swipeOverlay');
 }
 
+function setEnabled(on) {
+  chrome.storage.sync.set({enabled: on});
+  if (on) {
+    chrome.storage.sync.get('on', data => {
+      setOn(data.on);
+    });
+  } else {
+    hideOverlay();
+    hideEnabler();
+  }
+}
+
 function setOn(on) {
   chrome.storage.sync.set({on: on});
   if (on) {
@@ -363,6 +375,9 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     return;
   }
   switch (request.type) {
+    case 'enabled':
+      setEnabled(request.value);
+      return;
     case 'on':
       setOn(request.value);
       return;
@@ -372,6 +387,6 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
 });
 
-chrome.storage.sync.get('on', data => {
-  setOn(data.on);
+chrome.storage.sync.get('enabled', data => {
+  setEnabled(data.enabled);
 });
