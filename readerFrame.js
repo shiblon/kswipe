@@ -1,5 +1,7 @@
-function waitForReady(checker) {
-  triesLeft = 1000;
+function waitForReady(seconds, checker) {
+  const _READY_CHECK_MS = 50
+
+  triesLeft = Math.ceil(seconds * 1000 / _READY_CHECK_MS);
   return new Promise((resolve, reject) => {
     setTimeout(function check() {
       triesLeft--;
@@ -8,34 +10,33 @@ function waitForReady(checker) {
         return;
       }
       if (!checker()) {
-        setTimeout(check, 50);
+        setTimeout(check, _READY_CHECK_MS);
         return;
       }
       resolve();
-    }, 50);
+    }, _READY_CHECK_MS);
   });
 }
 
-const PREV_ID = 'kindleReader_pageTurnAreaLeft';
-const NEXT_ID = 'kindleReader_pageTurnAreaRight';
+const _PREV_ID = 'kindleReader_pageTurnAreaLeft';
+const _NEXT_ID = 'kindleReader_pageTurnAreaRight';
+const _READY_SECS = 30
 
-waitForReady(() => document.getElementById(PREV_ID) != null)
+waitForReady(_READY_SECS, () => document.getElementById(_PREV_ID) != null)
 .then(() => {
-  const prev = document.getElementById(PREV_ID);
-  const next = document.getElementById(NEXT_ID);
+  const prev = document.getElementById(_PREV_ID);
+  const next = document.getElementById(_NEXT_ID);
 
   window.addEventListener('message', evMsg => {
     switch (evMsg.data) {
       case 'next':
-        console.log('next page');
         next.dispatchEvent(new Event('click'));
         break;
       case 'prev':
         prev.dispatchEvent(new Event('click'));
-        console.log('prev page');
         break;
       default:
-        console.error('unknown message data received:', evMsg.data);
+        console.error('unknown frame message:', evMsg.data);
         break;
     }
   });

@@ -135,7 +135,7 @@ function goPrev() {
 }
 
 function drawSwipeArrow(ctx, direction, progress) {
-  const intProgress = Math.floor(progress / .33);
+  const intProgress = Math.floor(progress * 2);
   const awidth = 4 * ctx.canvas.width / 6;
   const aheight = 3 * ctx.canvas.height / 5;
 
@@ -309,7 +309,7 @@ function hideOverlay() {
   return;
 }
 
-chrome.storage.local.get('enable', data => {
+chrome.storage.sync.get('enable', data => {
   setEnabled(data.enable);
 });
 
@@ -321,7 +321,7 @@ function setEnabled(on) {
   if (on === isEnabled()) {
     return;
   }
-  chrome.storage.local.set({enable: on});
+  chrome.storage.sync.set({enable: on});
   if (on) {
     goFull();
     showOverlay();
@@ -346,6 +346,6 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
 });
 
-chrome.storage.local.get('enable', data => {
+chrome.storage.sync.get('enable', data => {
   setEnabled(data.enable);
 });
