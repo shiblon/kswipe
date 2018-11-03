@@ -1,16 +1,16 @@
-const elEnable = document.getElementById("enable");
+const elEnable = document.getElementById('on');
 elEnable.addEventListener('click', evt => {
   const on = !evt.target.classList.contains('on');
-  setEnabled(on);
-  chrome.storage.local.set({enable: on});
+  setOn(on);
+  chrome.storage.sync.set({on: on});
   chrome.tabs.query({active: true, currentWindow: true}, tabs => {
-    chrome.tabs.sendMessage(tabs[0].id, {type: "enable", value: on});
+    chrome.tabs.sendMessage(tabs[0].id, {type: 'on', value: on});
   });
   window.close(); // dismiss the popup
 });
 
-function setEnabled(on) {
-  const elEnable = document.getElementById('enable');
+function setOn(on) {
+  const elEnable = document.getElementById('on');
   if (on) {
     elEnable.classList.add('on');
     elEnable.innerText = 'KSwipe On';
@@ -21,11 +21,11 @@ function setEnabled(on) {
 }
 
 chrome.storage.onChanged.addListener((keyvals, storageType) => {
-  if (keyvals.enable) {
-    setEnabled(keyvals.enable.newValue);
+  if (keyvals.on) {
+    setOn(keyvals.on.newValue);
   }
 });
 
-chrome.storage.local.get('enable', data => {
-  setEnabled(data.enable);
+chrome.storage.sync.get('on', data => {
+  setOn(data.on);
 });

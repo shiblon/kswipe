@@ -15,6 +15,19 @@
   font-weight: bold;
   text-align: left;
 }
+#swipeEnabler {
+  display: block;
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  left: 0;
+  top: 0;
+  z-index: 3000;
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+}
 button.navBtn,button.ctlBtn {
   font-size: 2em;
   position: relative;

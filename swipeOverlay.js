@@ -211,6 +211,33 @@ function drawTrafficLight(ctx, progress) {
   ctx.restore();
 }
 
+function showEnabler() {
+  if (document.querySelector('#swipeEnabler')) {
+    console.error('swipe enabler already on');
+    return;
+  }
+  const enabler = document.createElement('div');
+  enabler.id = 'swipeEnabler';
+  const onButton = document.createElement('button');
+  onButton.id = 'onBtn';
+  onButton.classList.add('navBtn');
+  onButton.innerText = 'K';
+  onButton.addEventListener('click', () => {
+    setOn(true);
+  });
+  enabler.appendChild(onButton);
+  document.body.appendChild(enabler);
+}
+
+function hideEnabler() {
+  const enabler = document.querySelector('#swipeEnabler')
+  if (enabler == null) {
+    console.error('swipe enabler already off');
+    return;
+  }
+  document.body.removeChild(enabler);
+}
+
 function showOverlay() {
   if (document.querySelector('#swipeOverlay')) {
     console.error('swipe overlay already on');
@@ -225,7 +252,7 @@ function showOverlay() {
   exitImg.src = chrome.runtime.getURL('images/exit.png');
   exitButton.appendChild(exitImg);
   exitButton.addEventListener('click', () => {
-    setEnabled(false);
+    setOn(false);
   });
   const fsButton = document.createElement('button');
   fsButton.id = 'fsButton';
@@ -302,32 +329,31 @@ function exitFull() {
 
 function hideOverlay() {
   const overlay = document.querySelector('#swipeOverlay');
-  if (!overlay) {
+  if (overlay == null) {
+    console.error('overlay already off');
     return;
   }
   document.body.removeChild(overlay);
-  return;
 }
 
-chrome.storage.sync.get('enable', data => {
-  setEnabled(data.enable);
+chrome.storage.sync.get('on', data => {
+  setOn(data.on);
 });
 
 function isEnabled() {
   return !!document.getElementById('swipeOverlay');
 }
 
-function setEnabled(on) {
-  if (on === isEnabled()) {
-    return;
-  }
-  chrome.storage.sync.set({enable: on});
+function setOn(on) {
+  chrome.storage.sync.set({on: on});
   if (on) {
     goFull();
+    hideEnabler();
     showOverlay();
   } else {
     exitFull();
     hideOverlay();
+    showEnabler();
   }
 }
 
@@ -337,8 +363,8 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     return;
   }
   switch (request.type) {
-    case "enable":
-      setEnabled(request.value);
+    case 'on':
+      setOn(request.value);
       return;
     default:
       console.log('ignoring unknown request type:', request.type);
@@ -346,6 +372,6 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
 });
 
-chrome.storage.sync.get('enable', data => {
-  setEnabled(data.enable);
+chrome.storage.sync.get('on', data => {
+  setOn(data.on);
 });
