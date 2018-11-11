@@ -245,6 +245,7 @@ function showOverlay() {
   }
   const overlay = document.createElement('div');
   overlay.id = 'swipeOverlay';
+  overlay.addEventListener('contextmenu', event => event.preventDefault());
   const exitButton = document.createElement('button');
   exitButton.id = 'exitBtn';
   exitButton.classList.add('ctlBtn');
