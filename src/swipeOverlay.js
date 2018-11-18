@@ -265,6 +265,8 @@ function showOverlay() {
     console.error('swipe overlay already on');
     return;
   }
+  document.getElementById('KindleReaderContainer').style.height = '95%';
+
   const overlay = document.createElement('div');
   overlay.id = 'swipeOverlay';
   overlay.addEventListener('contextmenu', event => event.preventDefault());
@@ -352,6 +354,7 @@ function exitFull() {
 }
 
 function hideOverlay() {
+  document.getElementById('KindleReaderContainer').style.height = '100%';
   const overlay = document.querySelector('#swipeOverlay');
   if (overlay == null) {
     console.error('overlay already off');
