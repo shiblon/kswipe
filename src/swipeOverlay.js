@@ -16,11 +16,11 @@ function registerSwipeHandler(el, handler, config) {
   // Direction: > 0 indicates to the right, < 0 indicates to the left.
   const swipe = {
     state: 'idle',
-    dragStartTime: 0,
+    dragStartMS: 0,
     startX: 0,
     totalX: 0,
     direction: 0,
-    restStartTime: 0,
+    restStartMS: 0,
   };
 
   function dirMatchesOriginatingSide(dir, x) {
@@ -31,11 +31,45 @@ function registerSwipeHandler(el, handler, config) {
     return (x < w/3 && dir > 0) || (x > 2*w/3 && dir < 0);
   }
 
+  function goIdle(direction) {
+    swipe.state = 'idle';
+    onIdle({dir: direction});
+  }
+
+  const REST_CHECK_INTERVAL_MS = 50;
+  const REST_DURATION_MS = 3 * 1000;
+  function goRest() {
+    swipe.state = 'resting';
+    swipe.restStartMS = +new Date();
+    setTimeout(function checkRest() {
+      if (swipe.state !== 'resting') {
+        return;
+      }
+      const dt = +new Date() - swipe.restStartMS;
+      console.log(dt, REST_DURATION_MS);
+      onRest({
+        target: el,
+        dir: swipe.direction,
+        progress: Math.min(1.0, dt / REST_DURATION_MS),
+      });
+      if (dt < REST_DURATION_MS) {
+        // Not done waiting - try again.
+        setTimeout(checkRest, REST_CHECK_INTERVAL_MS);
+        return;
+      }
+      goIdle(swipe.direction);
+    }, REST_CHECK_INTERVAL_MS);
+  }
+
+  let interactionTimeout = null;
   el.addEventListener('touchmove', ev => {
+    if (interactionTimeout != null) {
+      clearTimeout(interactionTimeout);
+      interactionTimeout = null;
+    }
+
     const MIN_TRIGGER_PX = document.body.clientWidth / 6;
     const MIN_DIR_PX = 50;
-    const REST_DURATION_MS = 3 * 1000;
-    const REST_CHECK_INTERVAL_MS = 50;
 
     const touch = ev.touches[0];
     let dx = 0;
@@ -45,7 +79,7 @@ function registerSwipeHandler(el, handler, config) {
         swipe.startX = touch.clientX;
         swipe.totalX = 0;
         swipe.state = 'determining';
-        swipe.dragStartTime = +new Date();
+        swipe.dragStartMS = +new Date();
         return;
       case 'determining':
         dx = touch.clientX - swipe.startX;
@@ -58,7 +92,11 @@ function registerSwipeHandler(el, handler, config) {
           swipe.direction = Math.sign(swipe.totalX);
           swipe.totalX = 0;
           swipe.startX = touch.clientX;
-          swipe.state = dirMatchesOriginatingSide(swipe.direction, touch.clientX) ? 'dragging' : 'idle';
+          if (dirMatchesOriginatingSide(swipe.direction, touch.clientX)) {
+            swipe.state = 'dragging';
+          } else {
+            goIdle();
+          }
         }
         return;
       case 'dragging':
@@ -79,35 +117,19 @@ function registerSwipeHandler(el, handler, config) {
         });
 
         if (Math.abs(swipe.totalX) >= MIN_TRIGGER_PX) {
-          swipe.state = 'resting';
-          swipe.restStartTime = +new Date();
-
           handler({
             target: el,
             dir: swipe.direction,
             x: touch.clientX,
             y: touch.clientY,
           });
-
-          setTimeout(function checkRest() {
-            if (swipe.state !== 'resting') {
-              return;
-            }
-            const dt = +new Date() - swipe.restStartTime;
-            onRest({
-              target: el,
-              dir: swipe.direction,
-              progress: Math.min(1.0, dt / REST_DURATION_MS),
-            });
-            if (dt < REST_DURATION_MS) {
-              // Not done waiting - try again.
-              setTimeout(checkRest, REST_CHECK_INTERVAL_MS);
-              return;
-            }
-            swipe.state = 'idle';
-            onIdle({dir: swipe.direction});
-          }, REST_CHECK_INTERVAL_MS);
+          goRest();
+          return;
         }
+
+        interactionTimeout = setTimeout(() => {
+          goIdle(swipe.direction);
+        }, 3000);
         return;
       case 'resting':
         // If we get move events while resting, we start the resting
@@ -115,7 +137,7 @@ function registerSwipeHandler(el, handler, config) {
         // events for a specified period of time. This gives the user
         // time to haltingly move fingers and hands off of the
         // screen.
-        swipe.restStartTime = +new Date();
+        swipe.restStartMS = +new Date();
         return;
       default:
         console.error('unknown swipe state', swipe.state);
@@ -296,6 +318,7 @@ function showOverlay() {
       drawSwipeArrow(indicator.getContext('2d'), dir, progress);
     },
     onRest: ({progress}) => {
+      console.log('rest', progress);
       drawTrafficLight(indicator.getContext('2d'), progress);
     },
     onIdle: () => {
