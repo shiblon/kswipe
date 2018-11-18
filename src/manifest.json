@@ -1,6 +1,6 @@
 {
   "name": "KSwipe",
-  "version": "0.0.0.4",
+  "version": "0.0.0.5",
   "description": "KSwipe aims to make books easy to use for people with limited dexterity. K stands for Krissa, my friend with cerebral palsy.",
   "options_page": "options.html",
   "permissions": [
